@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InsightGuard Pro | Azure-Powered Document Intelligence</title>
+  <meta name="description" content="Enterprise-grade document risk analysis powered by Azure Document Intelligence & Content Safety">
+  
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+</head>
+<body>
+  <!-- Animated Background -->
+  <div class="bg-animation">
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+    <div class="bg-grid"></div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay hidden">
+    <div class="loading-content">
+      <div class="loading-spinner"></div>
+      <p class="loading-text" id="loadingText">Processing document...</p>
+      <div class="loading-steps" id="loadingSteps">
+        <span class="step active" data-step="upload">📤 Upload</span>
+        <span class="step" data-step="ocr">🔍 OCR Analysis</span>
+        <span class="step" data-step="safety">🛡️ Content Safety</span>
+        <span class="step" data-step="risk">📊 Risk Assessment</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- App Container -->
+  <div class="app-container">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar glass-panel">
+      <div class="logo">
+        <div class="logo-icon">
+          <i data-lucide="shield-check" class="icon-primary"></i>
+          <i data-lucide="sparkles" class="icon-sparkle"></i>
+        </div>
+        <div class="logo-text">
+          <span class="logo-main">InsightGuard</span>
+          <span class="logo-sub">Pro Edition</span>
+        </div>
+      </div>
+      
+      <nav class="nav-menu">
+        <button class="nav-item active" data-view="dashboard">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+          <span class="nav-badge hidden">3</span>
+        </button>
+        <button class="nav-item" data-view="upload">
+          <i data-lucide="cloud-upload"></i>
+          <span>Upload Queue</span>
+          <span class="nav-badge" id="queueBadge">0</span>
+        </button>
+        <button class="nav-item" data-view="history">
+          <i data-lucide="clock"></i>
+          <span>History & Audit</span>
+        </button>
+        <button class="nav-item" data-view="azure">
+          <i data-lucide="cloud-cog"></i>
+          <span>Azure Services</span>
+          <span class="nav-status" id="azureStatus">⚪</span>
+        </button>
+        <button class="nav-item" data-view="settings">
+          <i data-lucide="settings-2"></i>
+          <span>Settings</span>
+        </button>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="azure-status-mini">
+          <span class="status-dot" id="miniAzureStatus"></span>
+          <span class="status-text">Azure Services</span>
+        </div>
+        <div class="user-profile">
+          <div class="avatar">
+            <span>IG</span>
+            <span class="avatar-status online"></span>
+          </div>
+          <div class="user-info">
+            <span class="name">Analyst Team</span>
+            <span class="role">Enterprise Access</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      
+      <!-- Top Navbar -->
+      <header class="top-navbar glass-panel">
+        <div class="navbar-left">
+          <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <i data-lucide="menu"></i>
+          </button>
+          <h1 class="page-title">
+            <span class="title-gradient">Intelligent Document Risk Analyzer</span>
+          </h1>
+        </div>
+        <div class="navbar-right">
+          <div class="search-box">
+            <i data-lucide="search"></i>
+            <input type="text" placeholder="Search history..." id="searchInput">
+          </div>
+          <button class="icon-btn" id="refreshBtn" aria-label="Refresh" title="Refresh Analysis">
+            <i data-lucide="refresh-cw"></i>
+          </button>
+          <button class="icon-btn" aria-label="Notifications" id="notifBtn">
+            <i data-lucide="bell"></i>
+            <span class="badge pulse" id="notifBadge">2</span>
+          </button>
+          <button class="btn-primary btn-sm" id="quickAnalyzeBtn">
+            <i data-lucide="zap"></i>
+            <span>Quick Analyze</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Views -->
+      
+      <!-- Dashboard View -->
+      <section id="dashboard-view" class="view active">
+        <div class="dashboard-grid">
+          
+          <!-- Upload Card -->
+          <div class="card upload-card glass-panel">
+            <div class="card-header">
+              <h2><i data-lucide="file-up"></i> Document Ingestion</h2>
+              <span class="card-subtitle">Powered by Azure Document Intelligence</span>
+            </div>
+            <div class="drop-zone" id="dropZone">
+              <div class="drop-zone-content">
+                <div class="drop-icon">
+                  <i data-lucide="cloud-upload" class="icon-large"></i>
+                  <div class="drop-glow"></div>
+                </div>
+                <p class="drop-title">Drag & drop your document</p>
+                <p class="drop-subtitle">or <span class="link-text">browse files</span></p>
+                <div class="file-types">
+                  <span class="file-type">PDF</span>
+                  <span class="file-type">PNG</span>
+                  <span class="file-type">JPG</span>
+                  <span class="file-type">DOCX</span>
+                </div>
+                <span class="file-limit"><i data-lucide="info"></i> Max 25MB • Azure-processed</span>
+              </div>
+              <input type="file" id="fileInput" hidden accept=".pdf,.png,.jpg,.jpeg,.docx,.txt">
+            </div>
+            
+            <!-- Upload Progress -->
+            <div class="upload-progress hidden" id="uploadProgress">
+              <div class="progress-header">
+                <span class="progress-filename" id="progressFilename">document.pdf</span>
+                <span class="progress-percent" id="progressPercent">0%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" id="progressFill">
+                  <div class="progress-glow"></div>
+                </div>
+              </div>
+              <div class="progress-steps">
+                <span class="p-step active" data-step="1">Upload</span>
+                <span class="p-step" data-step="2">OCR</span>
+                <span class="p-step" data-step="3">Safety Check</span>
+                <span class="p-step" data-step="4">Analysis</span>
+              </div>
+            </div>
+            
+            <!-- Azure Status -->
+            <div class="azure-config-notice" id="azureConfigNotice">
+              <i data-lucide="alert-circle"></i>
+              <span>Configure Azure credentials in <code>config.js</code> for full functionality</span>
+              <button class="btn-text" id="configAzureBtn">Configure Now</button>
+            </div>
+          </div>
+
+          <!-- Risk Gauge Card -->
+          <div class="card risk-card glass-panel">
+            <div class="card-header">
+              <h2><i data-lucide="gauge"></i> Composite Risk Score</h2>
+              <span class="card-subtitle">AI-Powered Assessment</span>
+            </div>
+            <div class="gauge-wrapper">
+              <div class="gauge-container">
+                <canvas id="riskGauge" width="200" height="200"></canvas>
+                <div class="gauge-center">
+                  <span class="score-value" id="scoreValue">--</span>
+                  <span class="score-label" id="scoreLabel">Awaiting Analysis</span>
+                  <div class="score-badge" id="riskBadge">
+                    <span class="badge-dot"></span>
+                    <span class="badge-text">Pending</span>
+                  </div>
+                </div>
+              </div>
+              <div class="gauge-legend">
+                <div class="legend-item">
+                  <span class="legend-color low"></span>
+                  <span>Low &lt;30</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-color medium"></span>
+                  <span>Medium 30-70</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-color high"></span>
+                  <span>High &gt;70</span>
+                </div>
+              </div>
+            </div>
+            <div class="confidence-summary">
+              <span class="conf-label">Model Confidence</span>
+              <div class="conf-bar">
+                <div class="conf-fill" id="confFill" style="width: 0%"></div>
+              </div>
+              <span class="conf-value" id="confValue">--%</span>
+            </div>
+          </div>
+
+          <!-- Explainability Card -->
+          <div class="card explain-card glass-panel">
+            <div class="card-header">
+              <h2><i data-lucide="lightbulb"></i> Explainability & Insights</h2>
+              <span class="card-subtitle">Azure Content Safety + Custom Rules</span>
+            </div>
+            
+            <!-- Azure Content Safety Results -->
+            <div class="azure-safety-summary" id="azureSafetySummary">
+              <div class="safety-header">
+                <span class="safety-title">🛡️ Content Safety Analysis</span>
+                <span class="safety-status" id="safetyStatus">⚪ Pending</span>
+              </div>
+              <div class="safety-metrics">
+                <div class="safety-metric">
+                  <span class="metric-label">Hate</span>
+                  <div class="metric-bar"><div class="metric-fill hate" id="hateFill"></div></div>
+                  <span class="metric-value" id="hateValue">0.00</span>
+                </div>
+                <div class="safety-metric">
+                  <span class="metric-label">Self-Harm</span>
+                  <div class="metric-bar"><div class="metric-fill selfharm" id="selfharmFill"></div></div>
+                  <span class="metric-value" id="selfharmValue">0.00</span>
+                </div>
+                <div class="safety-metric">
+                  <span class="metric-label">Sexual</span>
+                  <div class="metric-bar"><div class="metric-fill sexual" id="sexualFill"></div></div>
+                  <span class="metric-value" id="sexualValue">0.00</span>
+                </div>
+                <div class="safety-metric">
+                  <span class="metric-label">Violence</span>
+                  <div class="metric-bar"><div class="metric-fill violence" id="violenceFill"></div></div>
+                  <span class="metric-value" id="violenceValue">0.00</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Flagged Content -->
+            <div class="text-analysis" id="textAnalysis">
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line short"></div>
+              <div class="skeleton-line"></div>
+            </div>
+            
+            <!-- Highlighted Phrases -->
+            <div class="flagged-phrases" id="flaggedPhrases"></div>
+          </div>
+
+          <!-- Analytics Charts Card -->
+          <div class="card charts-card glass-panel">
+            <div class="card-header">
+              <h2><i data-lucide="circle-help"></i> Risk Analytics</h2>
+              <div class="card-actions">
+                <button class="btn-icon" id="exportChartBtn" title="Export">
+                  <i data-lucide="download"></i>
+                </button>
+                <button class="btn-icon" id="refreshChartBtn" title="Refresh">
+                  <i data-lucide="refresh-cw"></i>
+                </button>
+              </div>
+            </div>
+            <div class="chart-grid">
+              <div class="chart-wrapper">
+                <canvas id="riskDistChart"></canvas>
+              </div>
+              <div class="chart-wrapper">
+                <canvas id="confidenceChart"></canvas>
+              </div>
+            </div>
+            <div class="chart-legend" id="chartLegend"></div>
+          </div>
+
+          <!-- Azure Document Intelligence Summary -->
+          <div class="card azure-doc-card glass-panel">
+            <div class="card-header">
+              <h2><i data-lucide="file-search"></i> Document Intelligence</h2>
+              <span class="card-subtitle">Azure OCR & Structure Analysis</span>
+            </div>
+            <div class="azure-doc-summary" id="azureDocSummary">
+              <div class="doc-status">
+                <span class="status-indicator" id="docStatus">⚪</span>
+                <span class="status-text" id="docStatusText">Not processed</span>
+              </div>
+              <div class="doc-metrics-grid">
+                <div class="doc-metric">
+                  <i data-lucide="file-text"></i>
+                  <span class="metric-num" id="docPages">--</span>
+                  <span class="metric-label">Pages</span>
+                </div>
+                <div class="doc-metric">
+                  <i data-lucide="type"></i>
+                  <span class="metric-num" id="docWords">--</span>
+                  <span class="metric-label">Words</span>
+                </div>
+                <div class="doc-metric">
+                  <i data-lucide="table"></i>
+                  <span class="metric-num" id="docTables">--</span>
+                  <span class="metric-label">Tables</span>
+                </div>
+                <div class="doc-metric">
+                  <i data-lucide="form-input"></i>
+                  <span class="metric-num" id="docForms">--</span>
+                  <span class="metric-label">Forms</span>
+                </div>
+              </div>
+              <div class="doc-preview" id="docPreview">
+                <span class="preview-placeholder">Document preview will appear here after analysis</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- History View -->
+      <section id="history-view" class="view">
+        <div class="card history-card glass-panel">
+          <div class="card-header">
+            <h2><i data-lucide="clock-3"></i> Session Timeline & Comparison</h2>
+            <div class="card-actions">
+              <button class="btn-secondary btn-sm" id="exportHistoryBtn">
+                <i data-lucide="download"></i> Export CSV
+              </button>
+              <button class="btn-secondary btn-sm" id="clearHistoryBtn">
+                <i data-lucide="trash-2"></i> Clear
+              </button>
+            </div>
+          </div>
+          
+          <!-- History Filters -->
+          <div class="history-filters">
+            <div class="filter-group">
+              <label><i data-lucide="calendar"></i> Date Range</label>
+              <select id="dateFilter">
+                <option value="all">All Time</option>
+                <option value="today">Today</option>
+                <option value="week" selected>This Week</option>
+                <option value="month">This Month</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label><i data-lucide="triangle-alert"></i> Risk Level</label>
+              <select id="riskFilter">
+                <option value="all">All Levels</option>
+                <option value="low">Low Risk</option>
+                <option value="medium">Medium Risk</option>
+                <option value="high">High Risk</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label><i data-lucide="search"></i> Search</label>
+              <input type="text" id="historySearch" placeholder="Filename...">
+            </div>
+          </div>
+          
+          <!-- Timeline -->
+          <div class="timeline-container" id="historyTimeline">
+            <!-- Items injected by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Azure Services View -->
+      <section id="azure-view" class="view">
+        <div class="card azure-config-card glass-panel">
+          <div class="card-header">
+            <h2><i data-lucide="cloud-cog"></i> Azure Services Configuration</h2>
+            <span class="card-subtitle">Manage API credentials and settings</span>
+          </div>
+          
+          <div class="azure-config-grid">
+            <!-- Document Intelligence Config -->
+            <div class="config-section">
+              <div class="config-header">
+                <div class="config-icon di">
+                  <i data-lucide="file-search"></i>
+                </div>
+                <div>
+                  <h3>Document Intelligence</h3>
+                  <span class="config-status" id="diStatus">⚪ Not Configured</span>
+                </div>
+              </div>
+              <div class="config-fields">
+                <div class="config-field">
+                  <label>Endpoint URL</label>
+                  <input type="text" id="diEndpoint" placeholder="https://YOUR_RESOURCE.cognitiveservices.azure.com/">
+                  <button class="btn-icon btn-sm test-btn" id="testDiBtn" title="Test Connection">
+                    <i data-lucide="plug-zap"></i>
+                  </button>
+                </div>
+                <div class="config-field">
+                  <label>API Key</label>
+                  <div class="input-with-toggle">
+                    <input type="password" id="diKey" placeholder="Enter your API key">
+                    <button class="toggle-visibility" id="toggleDiKey">
+                      <i data-lucide="eye"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="config-field">
+                  <label>API Version</label>
+                  <select id="diApiVersion">
+                    <option value="2023-07-31">2023-07-31 (Latest)</option>
+                    <option value="2023-02-28">2023-02-28</option>
+                    <option value="2022-08-31">2022-08-31</option>
+                  </select>
+                </div>
+              </div>
+              <button class="btn-primary" id="saveDiBtn">
+                <i data-lucide="save"></i> Save Configuration
+              </button>
+            </div>
+
+            <!-- Content Safety Config -->
+            <div class="config-section">
+              <div class="config-header">
+                <div class="config-icon cs">
+                  <i data-lucide="shield-check"></i>
+                </div>
+                <div>
+                  <h3>Content Safety</h3>
+                  <span class="config-status" id="csStatus">⚪ Not Configured</span>
+                </div>
+              </div>
+              <div class="config-fields">
+                <div class="config-field">
+                  <label>Endpoint URL</label>
+                  <input type="text" id="csEndpoint" placeholder="https://YOUR_RESOURCE.cognitiveservices.azure.com/">
+                  <button class="btn-icon btn-sm test-btn" id="testCsBtn" title="Test Connection">
+                    <i data-lucide="plug-zap"></i>
+                  </button>
+                </div>
+                <div class="config-field">
+                  <label>API Key</label>
+                  <div class="input-with-toggle">
+                    <input type="password" id="csKey" placeholder="Enter your API key">
+                    <button class="toggle-visibility" id="toggleCsKey">
+                      <i data-lucide="eye"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="config-field">
+                  <label>Severity Threshold</label>
+                  <select id="csThreshold">
+                    <option value="0">0 - Lenient</option>
+                    <option value="2">2 - Balanced</option>
+                    <option value="4" selected>4 - Strict</option>
+                    <option value="6">6 - Maximum</option>
+                  </select>
+                </div>
+              </div>
+              <button class="btn-primary" id="saveCsBtn">
+                <i data-lucide="save"></i> Save Configuration
+              </button>
+            </div>
+          </div>
+          
+          <!-- Connection Test Results -->
+          <div class="test-results hidden" id="testResults">
+            <h4>Connection Test Results</h4>
+            <div class="result-item" id="diTestResult"></div>
+            <div class="result-item" id="csTestResult"></div>
+          </div>
+          
+          <!-- Security Notice -->
+          <div class="security-notice">
+            <i data-lucide="shield-alert"></i>
+            <div>
+              <strong>Security Notice:</strong> API keys are stored in browser memory only. 
+              For production, use a backend proxy to secure your credentials.
+              <a href="#" id="learnMoreLink">Learn more about secure deployment</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Upload Queue View -->
+      <section id="upload-view" class="view">
+        <div class="card glass-panel">
+          <div class="card-header">
+            <h2><i data-lucide="list-ordered"></i> Upload Queue</h2>
+            <span class="card-subtitle">Manage pending and processing documents</span>
+          </div>
+          <div class="queue-list" id="queueList">
+            <div class="queue-empty">
+              <i data-lucide="inbox"></i>
+              <p>No documents in queue</p>
+              <span class="queue-hint">Upload a document to get started</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Settings View -->
+      <section id="settings-view" class="view">
+        <div class="card glass-panel">
+          <div class="card-header">
+            <h2><i data-lucide="settings-2"></i> System Settings</h2>
+            <span class="card-subtitle">Customize analysis behavior</span>
+          </div>
+          
+          <div class="settings-grid">
+            <div class="settings-section">
+              <h3>🎨 Appearance</h3>
+              <div class="setting-item">
+                <label>Theme</label>
+                <select id="themeSelect">
+                  <option value="dark">Dark (Default)</option>
+                  <option value="light">Light</option>
+                  <option value="auto">Auto (System)</option>
+                </select>
+              </div>
+              <div class="setting-item">
+                <label>Animation Speed</label>
+                <select id="animationSpeed">
+                  <option value="fast">Fast</option>
+                  <option value="normal" selected>Normal</option>
+                  <option value="slow">Slow</option>
+                  <option value="none">None</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="settings-section">
+              <h3>🔍 Analysis Preferences</h3>
+              <div class="setting-item toggle">
+                <label>
+                  <span>Enable Auto-Analysis</span>
+                  <span class="toggle-switch">
+                    <input type="checkbox" id="autoAnalyze" checked>
+                    <span class="toggle-slider"></span>
+                  </span>
+                </label>
+              </div>
+              <div class="setting-item toggle">
+                <label>
+                  <span>Include Azure Content Safety</span>
+                  <span class="toggle-switch">
+                    <input type="checkbox" id="useContentSafety" checked>
+                    <span class="toggle-slider"></span>
+                  </span>
+                </label>
+              </div>
+              <div class="setting-item">
+                <label>Risk Calculation Weight</label>
+                <div class="slider-group">
+                  <input type="range" id="riskWeight" min="0" max="100" value="70">
+                  <span id="riskWeightValue">70% Azure / 30% Custom</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="settings-section">
+              <h3>💾 Data Management</h3>
+              <div class="setting-item">
+                <label>History Retention</label>
+                <select id="historyRetention">
+                  <option value="7">7 Days</option>
+                  <option value="30" selected>30 Days</option>
+                  <option value="90">90 Days</option>
+                  <option value="forever">Forever</option>
+                </select>
+              </div>
+              <button class="btn-secondary" id="clearCacheBtn">
+                <i data-lucide="trash-2"></i> Clear Local Cache
+              </button>
+              <button class="btn-secondary" id="exportSettingsBtn">
+                <i data-lucide="download"></i> Export Settings
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Modal: Flagged Phrase Details -->
+  <div class="modal hidden" id="phraseModal">
+    <div class="modal-content glass-panel">
+      <div class="modal-header">
+        <h3>Flagged Content Details</h3>
+        <button class="modal-close" id="closePhraseModal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body" id="phraseModalBody">
+        <!-- Content injected by JS -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="ignorePhraseBtn">Ignore This Instance</button>
+        <button class="btn-primary" id="addToRulesBtn">Add to Custom Rules</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Azure Config Help -->
+  <div class="modal hidden" id="azureHelpModal">
+    <div class="modal-content glass-panel modal-lg">
+      <div class="modal-header">
+        <h3>🔑 Azure Configuration Guide</h3>
+        <button class="modal-close" id="closeAzureHelpModal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="help-steps">
+          <div class="help-step">
+            <span class="step-num">1</span>
+            <div>
+              <h4>Create Azure Resources</h4>
+              <p>Go to <a href="https://portal.azure.com" target="_blank">Azure Portal</a> and create:</p>
+              <ul>
+                <li><strong>Document Intelligence</strong> (formerly Form Recognizer)</li>
+                <li><strong>Content Safety</strong> resource</li>
+              </ul>
+            </div>
+          </div>
+          <div class="help-step">
+            <span class="step-num">2</span>
+            <div>
+              <h4>Get Credentials</h4>
+              <p>In each resource's "Keys and Endpoint" section, copy:</p>
+              <ul>
+                <li>Endpoint URL (e.g., <code>https://xxx.cognitiveservices.azure.com/</code>)</li>
+                <li>API Key (32-character string)</li>
+              </ul>
+            </div>
+          </div>
+          <div class="help-step">
+            <span class="step-num">3</span>
+            <div>
+              <h4>Configure InsightGuard</h4>
+              <p>Paste credentials into the Azure Services tab or edit <code>config.js</code>:</p>
+              <pre><code>AZURE: {
+  DOCUMENT_INTELLIGENCE: {
+    endpoint: 'https://YOUR_RESOURCE.cognitiveservices.azure.com/',
+    key: 'YOUR_KEY_HERE'
+  },
+  CONTENT_SAFETY: {
+    endpoint: 'https://YOUR_RESOURCE.cognitiveservices.azure.com/',
+    key: 'YOUR_KEY_HERE'
+  }
+}</code></pre>
+            </div>
+          </div>
+        </div>
+        <div class="help-notice">
+          <i data-lucide="shield-alert"></i>
+          <strong>Production Security:</strong> Never expose API keys in client-side code. 
+          Use a backend proxy server with environment variables for production deployments.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary" id="openAzureTabBtn">
+          <i data-lucide="external-link"></i> Open Azure Services Tab
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module" src="app.js"></script>
+  <script>
+    // Initialize Lucide icons after DOM load
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
